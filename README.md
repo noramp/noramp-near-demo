@@ -37,7 +37,8 @@ To setup env variables on vercel you can folllow this guide: https://vercel.com/
 Setup the following variables
 
 `NEXT_PUBLIC_APP_URL=http://localhost:3000`
-> Your app url 
+
+> Your app url
 
 `NORAMP_API_URL=https://api-testnet.noramp.io`
 
@@ -55,8 +56,6 @@ Setup the following variables
 
 > Create and copy the id from https://testnet.noramp.io/apps/triggers
 
-`NEXT_PUBLIC_NORAMP_EMBED_URL=https://testnet.noramp.io`
+`NEXT_PUBLIC_NORAMP_URL=https://testnet.noramp.io`
 
 > NoRamp URL (use https://app.noramp.io for production)
-
- 

@@ -14,8 +14,9 @@ export const createPrice = async (appId: string, createPriceDto) => {
       return response.data;
     })
     .catch((error) => {
-      console.log(error.message);
-      throw error;
+      console.log(error.response?.data?.message);
+      throw error.response?.data?.message;
+      // throw Object.keys(error.response);
     });
 };
 

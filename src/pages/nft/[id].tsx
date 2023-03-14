@@ -1,53 +1,78 @@
 import { GetServerSideProps } from 'next';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import Celebrate from '../../components/Celebrate';
 import NftCard from '../../components/NftCard';
-import NoRampPayWidget from '../../components/NoRampPayWidget';
+import NoRampButton from '../../components/NoRampButton/NoRampButton';
+import { NORAMP_APP_ID, NORAMP_URL } from '../../config/config';
 import { createPriceForNft, fetchNft } from '../../lib/api';
 
 const NftPage = ({ nft }) => {
-  const [showForm, setShowForm] = useState(false);
-  const [price, setPrice] = useState(null);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    window.addEventListener('message', (event) => {
+      if (event.origin !== NORAMP_URL) {
+        return;
+      }
+
+      if (event.data.event === 'noramp:onPayment') {
+        console.log('Payment event', event.data);
+
+        const type = event.data?.detail?.type;
+        const status = event.data?.detail?.data?.status;
+
+        if (type === 'finished' && status === 'paid') {
+          setSuccess(true);
+        }
+      }
+    });
+  }, []);
 
   const handleBuy = useCallback(async () => {
     try {
+      setIsLoading(true);
+
       const newPrice = await createPriceForNft(nft.id);
-      setPrice(newPrice);
+
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      window.initializeNoRamp({
+        appId: NORAMP_APP_ID,
+        priceId: newPrice.id,
+        testnet: true,
+
+        onSuccess: async (data) => {
+          console.log('success', data);
+          setSuccess(true);
+        },
+        onFailure: (err) => {
+          console.error(err);
+          alert(err.message);
+        },
+        onClose: (data) => {
+          console.log('closed', data);
+        },
+        onEvent: console.log,
+      });
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      window.NoRamp.open();
     } catch (e) {
+      console.error(e);
       toast.error('Error creating price');
       setError('Error creating price');
+    } finally {
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 3000);
     }
-    setShowForm(true);
   }, [nft.id]);
 
   const renderContent = () => {
-    if (error) {
-      return (
-        <div
-          className="flex flex-col gap-2 p-4 text-sm text-red-700 bg-red-100 border-red-500 dark:bg-red-200 dark:text-red-800 rounded-lg"
-          role="alert"
-        >
-          <div className="flex items-center">
-            <span>{error}</span>
-          </div>
-        </div>
-      );
-    }
-    if (showForm) {
-      return <NoRampPayWidget price={price} />;
-    }
-    return (
-      <button
-        className="text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:ring-cyan-300 dark:focus:ring-cyan-800 focus:!ring-2 group flex h-min items-center justify-center p-0.5 text-center font-medium focus:z-10 rounded-lg"
-        type="button"
-        onClick={handleBuy}
-      >
-        <span className="flex items-center rounded-md text-sm px-4 py-2">
-          Buy
-        </span>
-      </button>
-    );
+    return <NoRampButton onClick={handleBuy} loading={isLoading} />;
   };
 
   return (
@@ -57,8 +82,21 @@ const NftPage = ({ nft }) => {
       </div>
 
       <div className="flex items-center justify-center flex-1">
+        {error && (
+          <div
+            className="flex flex-col gap-2 p-4 text-sm text-red-700 bg-red-100 border-red-500 rounded-lg dark:bg-red-200 dark:text-red-800"
+            role="alert"
+          >
+            <div className="flex items-center">
+              <span>{error}</span>
+            </div>
+          </div>
+        )}
+
         {renderContent()}
       </div>
+
+      {success && <Celebrate />}
     </div>
   );
 };

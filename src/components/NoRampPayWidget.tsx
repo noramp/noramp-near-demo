@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { NORAMP_EMBED_URL, NORAMP_APP_ID } from '../config/config';
+import { NORAMP_URL, NORAMP_APP_ID } from '../config/config';
 import Celebrate from './Celebrate';
 
 const NoRampPayWidget = ({ price }) => {
@@ -7,7 +7,7 @@ const NoRampPayWidget = ({ price }) => {
 
   useEffect(() => {
     window.addEventListener('message', (event) => {
-      if (event.origin !== NORAMP_EMBED_URL) {
+      if (event.origin !== NORAMP_URL) {
         return;
       }
 
@@ -29,7 +29,7 @@ const NoRampPayWidget = ({ price }) => {
   return (
     <div className="flex flex-col items-center">
       <iframe
-        src={`${NORAMP_EMBED_URL}/embed/payments/${NORAMP_APP_ID}?device=desktop&theme=dark&price_id=${price.id}&auth=true`}
+        src={`${NORAMP_URL}/embed/payments/${NORAMP_APP_ID}?device=desktop&theme=dark&price_id=${price.id}&auth=true`}
         height="280"
         width="450"
         allow="clipboard-write"
