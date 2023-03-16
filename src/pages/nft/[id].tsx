@@ -51,7 +51,9 @@ const NftPage = ({ nft }) => {
         },
         onFailure: (err) => {
           console.error(err);
-          alert(err.message);
+          if (err?.message) {
+            alert(err?.message);
+          }
         },
         onClose: (data) => {
           console.log('closed', data);
