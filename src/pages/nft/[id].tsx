@@ -46,7 +46,8 @@ const NftPage = ({ nft }) => {
 
         onSuccess: async (data) => {
           console.log('success', data);
-          setSuccess(true);
+          // setSuccess(true);
+          setIsLoading(false);
         },
         onFailure: (err) => {
           console.error(err);
@@ -54,6 +55,7 @@ const NftPage = ({ nft }) => {
         },
         onClose: (data) => {
           console.log('closed', data);
+          setIsLoading(false);
         },
         onEvent: console.log,
       });
@@ -64,10 +66,6 @@ const NftPage = ({ nft }) => {
       console.error(e);
       toast.error('Error creating price');
       setError('Error creating price');
-    } finally {
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 3000);
     }
   }, [nft.id]);
 
