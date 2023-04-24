@@ -43,6 +43,7 @@ const NftPage = ({ nft }) => {
         appId: NORAMP_APP_ID,
         priceId: newPrice.id,
         testnet: true,
+        auth: true,
 
         onSuccess: async (data) => {
           console.log('success', data);
