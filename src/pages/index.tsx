@@ -1,14 +1,18 @@
-import { GetServerSideProps } from 'next';
 import Link from 'next/link';
+import LoadingOverlay from '../components/LoadingOverlay';
 import NftCard from '../components/NftCard';
-import { fetchNfts } from '../lib/api';
+import { useNfts } from '../hooks/useNfts';
 
-const Home = ({ nfts }) => {
+const Home = () => {
+  const { data: nfts, isLoading } = useNfts();
+
+  if (isLoading) return <LoadingOverlay />;
+
   return (
     <div className="container mx-auto">
       <div className="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {nfts.map((nft) => (
-          <Link href={`/nft/${nft.id}`} key={nft.id}>
+          <Link href={`/nft/${nft.token_id}`} key={nft.token_id}>
             <NftCard nft={nft} />
           </Link>
         ))}
@@ -18,13 +22,3 @@ const Home = ({ nfts }) => {
 };
 
 export default Home;
-
-export const getServerSideProps: GetServerSideProps = async () => {
-  const nfts = await fetchNfts();
-
-  return {
-    props: {
-      nfts,
-    },
-  };
-};

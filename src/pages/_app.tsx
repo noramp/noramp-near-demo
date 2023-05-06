@@ -10,7 +10,7 @@ function MyApp({ Component, pageProps: { ...pageProps } }: AppProps) {
   return (
     <>
       <Head>
-        <title>NoRamp Demo</title>
+        <title>NoRamp Near Demo</title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
 

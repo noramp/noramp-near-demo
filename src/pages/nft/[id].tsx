@@ -1,16 +1,25 @@
-import { GetServerSideProps } from 'next';
+import { useRouter } from 'next/router';
 import { useCallback, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import Celebrate from '../../components/Celebrate';
-import NftCard from '../../components/NftCard';
 import NoRampButton from '../../components/NoRampButton/NoRampButton';
 import { NORAMP_APP_ID, NORAMP_URL } from '../../config/config';
-import { createPriceForNft, fetchNft } from '../../lib/api';
+import { useNft } from '../../hooks/useNft';
+import { createPriceForNft } from '../../lib/api';
+import NftCard from '../../components/NftCard';
+import LoadingOverlay from '../../components/LoadingOverlay';
 
-const NftPage = ({ nft }) => {
+const NftPage = () => {
+  const router = useRouter();
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isWorking, setIsWorking] = useState(false);
+
+  const {
+    data: nft,
+    isLoading,
+    error: queryError,
+  } = useNft(router.query.id as string);
 
   useEffect(() => {
     window.addEventListener('message', (event) => {
@@ -33,9 +42,9 @@ const NftPage = ({ nft }) => {
 
   const handleBuy = useCallback(async () => {
     try {
-      setIsLoading(true);
+      setIsWorking(true);
 
-      const newPrice = await createPriceForNft(nft.id);
+      const newPrice = await createPriceForNft(nft.token_id);
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -48,7 +57,7 @@ const NftPage = ({ nft }) => {
         onSuccess: async (data) => {
           console.log('success', data);
           // setSuccess(true);
-          setIsLoading(false);
+          setIsWorking(false);
         },
         onFailure: (err) => {
           console.error(err);
@@ -58,7 +67,7 @@ const NftPage = ({ nft }) => {
         },
         onClose: (data) => {
           console.log('closed', data);
-          setIsLoading(false);
+          setIsWorking(false);
         },
         onEvent: console.log,
       });
@@ -69,20 +78,39 @@ const NftPage = ({ nft }) => {
       console.error(e);
       toast.error('Error creating price');
       setError('Error creating price');
+      setIsWorking(false);
     }
-  }, [nft.id]);
+  }, [nft?.token_id]);
 
   const renderContent = () => {
-    return <NoRampButton onClick={handleBuy} loading={isLoading} />;
+    if (queryError) {
+      return (
+        <div
+          className="flex flex-col gap-2 p-4 mt-20 text-sm text-red-700 bg-red-100 border-red-500 rounded-lg dark:bg-red-200 dark:text-red-800"
+          role="alert"
+        >
+          <div className="flex items-center">
+            {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+            {/* @ts-ignore */}
+            <span>{queryError.message}</span>
+          </div>
+        </div>
+      );
+    }
+    return <NoRampButton onClick={handleBuy} loading={isWorking} />;
   };
+
+  if (isLoading) return <LoadingOverlay />;
 
   return (
     <div className="container flex flex-col items-center justify-center gap-8 px-4 mx-auto md:flex-row">
-      <div className="flex-1 w-11/12 max-w-xs md:max-w-md">
-        <NftCard nft={nft} />
-      </div>
+      {nft && (
+        <div className="flex-1 w-11/12 max-w-xs md:max-w-md">
+          <NftCard nft={nft} />
+        </div>
+      )}
 
-      <div className="flex items-center justify-center flex-1">
+      <div className="flex flex-col items-center justify-center flex-1 gap-10">
         {error && (
           <div
             className="flex flex-col gap-2 p-4 text-sm text-red-700 bg-red-100 border-red-500 rounded-lg dark:bg-red-200 dark:text-red-800"
@@ -103,14 +131,3 @@ const NftPage = ({ nft }) => {
 };
 
 export default NftPage;
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const id = context.query.id as string;
-  const nft = await fetchNft(id);
-
-  return {
-    props: {
-      nft,
-    },
-  };
-};

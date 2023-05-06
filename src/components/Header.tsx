@@ -8,7 +8,7 @@ export default function Header() {
           <Link href="/">
             <div className="flex items-center py-6 pl-4 pr-8 space-x-3 lg:pl-7 sm:pl-6">
               <h1 className="text-2xl font-normal leading-6 text-gray-800">
-                NoRamp Demo
+                NoRamp Near Demo
               </h1>
             </div>
           </Link>

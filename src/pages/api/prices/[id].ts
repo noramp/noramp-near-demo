@@ -1,4 +1,3 @@
-import DATA from '../../../data/nfts.json';
 import axios from 'axios';
 import { NORAMP_APP_ID, NORAMP_TRIGGER_ID } from '../../../config/config';
 
@@ -21,21 +20,15 @@ export const createPrice = async (appId: string, createPriceDto) => {
 };
 
 const handler = async (req, res) => {
-  const nft = DATA.find((n) => n.id == req.query.id);
-
-  if (!nft) {
-    res.statusCode = 404;
-
-    return;
-  }
+  const nftId = req.query.id;
 
   const newPrice = await createPrice(NORAMP_APP_ID, {
-    amount: nft.price,
+    amount: 1,
     trigger_id: NORAMP_TRIGGER_ID,
     trigger_data: {
       params_data: {
-        token_id: String(nft.id),
-        receiver_id: 'elijosedev.testnet', // TODO: Replace with the receiver account ID
+        token_id: String(nftId),
+        receiver_id: 'elijosedev.testnet',
       },
     },
   });
